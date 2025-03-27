@@ -11,6 +11,7 @@
 :- dynamic quarto1_robo/1.
 :- dynamic banheiro_robo/1.
 :- dynamic calcada_robo/1.
+:- dynamic espalharFogo/1.
 
 %inicializando o robo
 
@@ -59,6 +60,7 @@ pessoa(p6,banheiro,100).
 pessoas([p1,p2,p3,p4,p5,p6]).
 
 lugares([cozinha, hub, quarto1, quarto2, banheiro]).
+espalharFogo([cozinha, hub, quarto1, quarto2, banheiro]).
 
 %inspecionar
 inspecionar:- robo(Local,_),
@@ -142,7 +144,7 @@ soltar(P):- format('A pessoa ~w nao esta na maca',[P]),!.
 
 %Caminhar
 
-caminhar(Destino):- robo(Local, O),
+caminhar(Destino):- vertice(Destino,_), robo(Local, O),
                     aresta(Local, Destino),
                     aresta(Destino, Local),
                     retract(robo(Local, O)),
@@ -152,13 +154,12 @@ caminhar(Destino):- robo(Local, O),
                     move_mapa(Local,Destino),
                     espalharFogo,
                     mapa(),
-                    diminuir_oxigenio,
-                    !.
+                    diminuir_oxigenio, !.
 
-caminhar(Destino):-robo(Local, _);
-                   \+ vertice(Destino,_);
+caminhar(Destino):-robo(Local, _),
+                   (\+ vertice(Destino,_);
                     \+ aresta(Local, Destino);
-                    \+ aresta(Destino, Local),
+                    \+ aresta(Destino, Local)),
                    format('N�o � poss�vel caminhar para ~w.~n', Destino).
                     
 %Oxigenacao
@@ -228,21 +229,38 @@ diminuir_oxigenio([P | Cauda]) :-
     diminuir_oxigenio(Cauda).
                              
 % espalhar fogo
-espalharFogo :- lugares(Lugares),
-                espalharFogo(Lugares).
+espalharFogo :- 
+    espalharFogo(L),
+    espalharFogoLoop(L).
 
-espalharFogo([]).
-espalharFogo([Cabeca|Cauda]) :-
-    aresta(Cabeca, Comodo),
-    aresta(Comodo, Cabeca),
-    vertice(Cabeca, incendio),
-    vertice(Comodo, semIncendio),
-    Comodo \= calcada,
+espalharFogoLoop([]) :- vertice(quarto2, semIncendio),
+                        retract(vertice(quarto2, semIncendio)),
+                        assertz(vertice(quarto2, incendio)),
+                        format('O comodo quarto2 agora esta pegando fogo!~n').
+espalharFogoLoop([]) :- vertice(quarto2, incendio),!.
+
+
+espalharFogoLoop([Cabeca|Resto]) :-
+    findall(Novo, (
+        aresta(Cabeca, Novo),
+        aresta(Novo, Cabeca),
+        vertice(Cabeca, incendio),
+        vertice(Novo, semIncendio),
+        Novo \= calcada
+    ), NovosComodos),
+
+    retract(espalharFogo(_)),
+    assertz(espalharFogo(Resto)),
+    % Incendiar os novos cômodos e imprimir
+    incendiar_todos(NovosComodos), !.
+
+incendiar_todos([]).
+incendiar_todos([Comodo|_]) :-
     retract(vertice(Comodo, semIncendio)),
     assert(vertice(Comodo, incendio)),
-    retract(lugares([Cabeca|Cauda])),
-    assert(lugares(Cauda)),
-    format('O comodo ~w esta agora pegando fogo!.~n', [Comodo]).
+    format('O comodo ~w esta agora pegando fogo!.~n', [Comodo]), !.
+    
+
                         
 %logs
 registrar_acoes(Acao):- assert(log(Acao)),
