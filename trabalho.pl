@@ -5,6 +5,12 @@
 :- dynamic vertice/2.
 :- dynamic pessoas/1.
 :- dynamic lugares/1.
+:- dynamic cozinha_robo/1.
+:- dynamic hub_robo/1.
+:- dynamic quarto2_robo/1.
+:- dynamic quarto1_robo/1.
+:- dynamic banheiro_robo/1.
+:- dynamic calcada_robo/1.
 
 %inicializando o robo
 
@@ -65,7 +71,7 @@ inspecionar:- robo(Local,_),
               
 exibir_oxigenacao([]).
 
-exibir_oxigenacao([Pessoa-Oxigenio| Resto]):- format('Pessoa: ~w - Oxigênio: ~w.~n',[Pessoa, Oxigenio]),
+exibir_oxigenacao([Pessoa-Oxigenio| Resto]):- format('Pessoa: ~w - Oxigï¿½nio: ~w.~n',[Pessoa, Oxigenio]),
                                               exibir_oxigenacao(Resto),!.
                                               
 %status robo
@@ -96,7 +102,7 @@ pegar(P):- robo(Local,_),
            format('Pegou a pessoa ~w do local ~w.~n', [P,Local]),
            registrar_acoes(pegar),!.
            
-pegar(P):- maca(Pessoas),
+pegar(_):- maca(Pessoas),
            length(Pessoas, N),
            N == 1,
            format('A maca ja possui uma pessoa'),!.
@@ -118,7 +124,7 @@ soltar(P):- robo(Local,_),
             NovaLista = [P| ListaPessoas],
             assert(pessoas(NovaLista)),
             format('~w.~n',[NovaLista]).
-            format('voce soltou a pessao ~w no local ~w.~n', [P, Local]),
+            format('voce soltou a pessoa ~w no local ~w.~n', [P, Local]),
             registrar_acoes(soltar),!.
             
 soltar(P):- robo(Local,_),
@@ -143,14 +149,17 @@ caminhar(Destino):- robo(Local, O),
                     assert(robo(Destino, O)),
                     format('Voce caminhou de ~w para ~w.~n',[Local, Destino]),
                     registrar_acoes(caminhar),
+                    move_mapa(Local,Destino),
+                    espalharFogo,
+                    mapa(),
                     diminuir_oxigenio,
-                    espalharFogo,!.
+                    !.
 
 caminhar(Destino):-robo(Local, _);
                    \+ vertice(Destino,_);
                     \+ aresta(Local, Destino);
                     \+ aresta(Destino, Local),
-                   format('Não é possível caminhar para ~w.~n', Destino).
+                   format('Nï¿½o ï¿½ possï¿½vel caminhar para ~w.~n', Destino).
                     
 %Oxigenacao
 oxigenar(P):- maca([P]),
@@ -168,24 +177,24 @@ oxigenar(P):- maca([P]),
               format('Pessoa ~w teve sua oxigenacao aumentada de ~w para ~w.~n', [P, O, O1]),
               registrar_acoes(oxigenar).
               
-oxigenar(P):-pessoa(P, Local, O),
+oxigenar(P):-pessoa(P, _, O),
              O =< 0,
              format('Nao foi possivel oxigenar ~w, pois seu oxigenio e menor ou igual a 0.~n', [P]),!.
              
-oxigenar(P):-pessoa(P, Local, O),
+oxigenar(P):-pessoa(P, Local, _),
              Local \= maca,
              format('Nao foi possivel oxigenar ~w, pois a pessoa nao esta na maca.~n', [P]),!.
              
 oxigenar(P):-format('Nao foi possivel oxigenar ~w.~n', [P]),!.
               
 diminuir_oxigenio :-
-    pessoas(ListaPessoas),  % Obtém a lista de pessoas
+    pessoas(ListaPessoas),  % Obtï¿½m a lista de pessoas
     diminuir_oxigenio(ListaPessoas).  % Chama o predicado recursivo com a lista
 
 % Caso base: lista vazia
 diminuir_oxigenio([]).
 
-% Caso 1: Pessoa em local com incêndio
+% Caso 1: Pessoa em local com incï¿½ndio
 diminuir_oxigenio([P | Cauda]) :-
     pessoa(P, Lugar, O),
     Lugar \= maca,
@@ -198,7 +207,7 @@ diminuir_oxigenio([P | Cauda]) :-
     format('Pessoa ~w teve sua oxigenacao diminuida de ~w para ~w.~n', [P, O, O1]),
     diminuir_oxigenio(Cauda).
 
-% Caso 2: Pessoa em local sem incêndio
+% Caso 2: Pessoa em local sem incï¿½ndio
 diminuir_oxigenio([P | Cauda]) :-
     pessoa(P, Lugar, O),
     Lugar \= maca,
@@ -211,9 +220,9 @@ diminuir_oxigenio([P | Cauda]) :-
     format('Pessoa ~w teve sua oxigenacao diminuida de ~w para ~w.~n', [P, O, O1]),
     diminuir_oxigenio(Cauda).
 
-% Caso 3: Pessoa com oxigênio <= 0 (morta)
+% Caso 3: Pessoa com oxigï¿½nio <= 0 (morta)
 diminuir_oxigenio([P | Cauda]) :-
-    pessoa(P, Lugar, O),
+    pessoa(P, _, O),
     O =< 0,
     format('Pessoa ~w esta morta, mas mesmo assim voce deve recuperar o seu corpo.~n', [P]),
     diminuir_oxigenio(Cauda).
@@ -253,3 +262,97 @@ listar_acoes([]).
 listar_acoes([Acao| Restante]):- format(' - ~w~n',[Acao]),
                                  listar_acoes(Restante).
 
+
+
+
+
+mapa() :-
+    % Parte de cima - Cozinha 
+    write('                -------------    '), nl,
+    write('                |  Cozinha  |    '), nl,
+    write('                |     P3    |    '), nl,
+    mostrar_cozinha_robo(), nl,
+    write('                -------------    '), nl,
+    write('                      ||         '), nl,
+
+    % Meio - Salaconectada com Quarto 2 
+    write('       |     -------------------   '),write('   ------------- '), nl,
+    write('       |    |        Hub        |  '),write('  |   Quarto 2  |'), nl,
+    write('Calcada|====|      P1   P2      |=='),write('==|      P5     |'), nl,
+    mostrar_hub_robo(),mostrar_quarto2_robo(), nl,
+    mostrar_calcada_robo(),write('  |             |'), nl,
+    write('       |     -------------------   '),write('   ------------- '), nl,
+    write('       |              ||           '),write('                 '), nl,
+
+    % Parte de baixo - Quarto 1 
+    write('                -------------       '), nl,
+    write('                |  Quarto 1   |     '), nl,
+    write('                |     P4      |     '), nl,
+    mostrar_quarto1_robo(), nl,
+    write('                -------------       '), nl,
+    write('                      ||            '), nl,
+
+    % Parte de baixo final - Banheiro 
+    write('                --------------      '), nl,
+    write('                |  Banheiro   |     '), nl,
+    write('                |     P6      |     '), nl,
+    mostrar_banheiro_robo(), nl,
+    write('                --------------      '), nl.
+
+
+
+banheiro_robo('                |             |     ').
+mostrar_banheiro_robo() :- banheiro_robo(X), write(X).
+quarto1_robo('                |             |     ').
+mostrar_quarto1_robo() :- quarto1_robo(X), write(X).
+hub_robo('       |    |                   |  ').
+mostrar_hub_robo() :- hub_robo(X), write(X).
+quarto2_robo('  |             |').
+mostrar_quarto2_robo() :- quarto2_robo(X), write(X).
+cozinha_robo('                |           |    ').
+mostrar_cozinha_robo() :- cozinha_robo(X), write(X).
+calcada_robo(' robo  |    |                   |  ').
+mostrar_calcada_robo() :- calcada_robo(X),write(X).
+
+
+
+
+
+move_mapa(banheiro, quarto1) :-  retract(banheiro_robo('                |    robo     |     ')), assertz(banheiro_robo('                |             |     ')),
+                                           retract(quarto1_robo('                |             |     ')), assertz(quarto1_robo('                |    robo     |     ')),!.
+
+move_mapa(quarto1, banheiro) :-  retract(quarto1_robo('                |    robo     |     ')), assertz(quarto1_robo('                |             |     ')),
+                                           retract(banheiro_robo('                |             |     ')), assertz(banheiro_robo('                |    robo     |     ')),!.
+
+move_mapa(hub, quarto1) :-  retract(hub_robo('       |    |       robo        |  ')), assertz(hub_robo('       |    |                   |  ')),
+                                           retract(quarto1_robo('                |             |     ')), assertz(quarto1_robo('                |    robo     |     ')),!.
+
+move_mapa(quarto1, hub) :-  assertz(hub_robo('       |    |       robo        |  ')), retract(hub_robo('       |    |                   |  ')),
+                                           assertz(quarto1_robo('                |             |     ')), retract(quarto1_robo('                |    robo     |     ')),!.
+
+move_mapa(hub, quarto2) :-  retract(hub_robo('       |    |       robo        |  ')), assertz(hub_robo('       |    |                   |  ')),
+                                           retract(quarto2_robo('  |             |')), assertz(quarto2_robo('  |     robo    |')),!.
+
+move_mapa(quarto2, hub) :-  assertz(hub_robo('       |    |       robo        |  ')), retract(hub_robo('       |    |                   |  ')),
+                                           assertz(quarto2_robo('  |             |')), retract(quarto2_robo('  |     robo    |')),!.
+
+move_mapa(calcada, hub) :-  retract(calcada_robo(' robo  |    |                   |  ')), assertz(calcada_robo('       |    |                   |  ')),
+                                           assertz(hub_robo('       |    |       robo        |  ')), retract(hub_robo('       |    |                   |  ')),!.
+
+move_mapa(hub, calcada) :-  assertz(calcada_robo(' robo  |    |                   |  ')), retract(calcada_robo('       |    |                   |  ')),
+                                           retract(hub_robo('       |    |       robo        |  ')), assertz(hub_robo('       |    |                   |  ')),!.
+
+move_mapa(cozinha, hub) :-  assertz(cozinha_robo('                |           |    ')), retract(cozinha_robo('                |    robo   |    ')),
+                                           assertz(hub_robo('       |    |       robo        |  ')), retract(hub_robo('       |    |                   |  ')),!.
+
+move_mapa(hub, cozinha) :-  retract(cozinha_robo('                |           |    ')), assertz(cozinha_robo('                |    robo   |    ')),
+                                           retract(hub_robo('       |    |       robo        |  ')), assertz(hub_robo('       |    |                   |  ')),!.
+
+
+
+
+
+
+                                           
+
+    
