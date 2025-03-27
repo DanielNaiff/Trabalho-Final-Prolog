@@ -1,0 +1,7 @@
+
+
+    % Atualizar a lista de lugares com os novos cômodos incendiados
+    append(Cauda, NovosComodos, NovaFila),
+    espalharFogoLoop(NovaFila), !.
+
+    incendiar_todos(Resto), !.
