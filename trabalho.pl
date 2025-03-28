@@ -83,17 +83,17 @@ aresta(quarto1, banheiro).
 
 
 % Definindo pessoas
-pessoa(p1,hub,100).
+pessoa(p1,hub,120).
 
-pessoa(p2,hub,100).
+pessoa(p2,hub,120).
 
-pessoa(p3,cozinha,100).
+pessoa(p3,cozinha,120).
 
-pessoa(p4,quarto1,100).
+pessoa(p4,quarto1,120).
 
-pessoa(p5,quarto2,100).
+pessoa(p5,quarto2,120).
 
-pessoa(p6,banheiro,100).
+pessoa(p6,banheiro,120).
 
 pessoas([p1,p2,p3,p4,p5,p6]).
 
