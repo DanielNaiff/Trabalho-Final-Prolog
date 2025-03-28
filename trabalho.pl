@@ -309,13 +309,12 @@ missao :- pessoa(p1, calcada, X),
             pessoa(p5, calcada, V),
             pessoa(p6, calcada, U),
             X > 0, Y > 0, Z > 0, W > 0, V > 0, U > 0,
-            format('Missao cumprida! o robo salvou todas as pessoa com vida!~n'),
-            registrar_acoes(missao),!.
+            format('Missao cumprida! o robo salvou todas as pessoa com vida!~n'), !.
 
 missao :- findall(Calcada, (pessoa(_, Calcada, _), Calcada == calcada), Lista),
           length(Lista, N),
           N is 6,
-          findall(Vida, (pessoa(_, _, Vida), Vida == 0), Vidas),
+          findall(Vida, (pessoa(_, _, Vida), Vida > 0), Vidas),
           length(Vidas, M),
           M >= 1,
           findall(Vivo, (pessoa(Vivo, _, X), X > 0), Vivos),
@@ -323,6 +322,10 @@ missao :- findall(Calcada, (pessoa(_, Calcada, _), Calcada == calcada), Lista),
           format('A missao nao foi cumprida, porem foi possivel salvar vidas.~n'),
           format('Pessoas vivas: ~w~n', [Vivos]),
           format('Pessoas mortas: ~w~n', [Mortos]).
+
+missao :- findall(Morto, (pessoa(Morto,Local,X), Local == calcada, X =< 0), Mortes),
+            length(Mortes, N), N is 6,
+            format('Missao falhou! Todas as pessoas perderam suas vidas!~n').
 
 missao :- format('A missao nao foi cumprida, ainda ha pessoas para serem salvas.~n').
                         
