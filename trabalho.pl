@@ -53,7 +53,7 @@
 
 %inicializando o robo
 
-robo(calcada, 100).
+robo(calcada, 350).
 maca([]).
 
 % Definindo os locais do ambiente
@@ -244,7 +244,7 @@ diminuir_oxigenio([P | Cauda]) :-
     Lugar \= calcada,
     vertice(Lugar, incendio),
     O > 0,
-    O1 is O - 15,
+    O1 is O - 10,
     retract(pessoa(P, Lugar, O)),
     assert(pessoa(P, Lugar, O1)),
     format('Pessoa ~w teve sua oxigenacao diminuida de ~w para ~w.~n', [P, O, O1]),
@@ -257,7 +257,7 @@ diminuir_oxigenio([P | Cauda]) :-
     Lugar \= calcada,
     vertice(Lugar, semIncendio),
     O > 0,
-    O1 is O - 10,
+    O1 is O - 5,
     retract(pessoa(P, Lugar, O)),
     assert(pessoa(P, Lugar, O1)),
     format('Pessoa ~w teve sua oxigenacao diminuida de ~w para ~w.~n', [P, O, O1]),
@@ -302,7 +302,29 @@ incendiar_todos([Comodo|_]) :-
     assert(vertice(Comodo, incendio)),
     format('O comodo ~w esta agora pegando fogo!.~n', [Comodo]), !.
     
+missao :- pessoa(p1, calcada, X),
+          pessoa(p2, calcada, Y),
+            pessoa(p3, calcada, Z),
+            pessoa(p4, calcada, W),
+            pessoa(p5, calcada, V),
+            pessoa(p6, calcada, U),
+            X > 0, Y > 0, Z > 0, W > 0, V > 0, U > 0,
+            format('Missao cumprida! o robo salvou todas as pessoa com vida!~n'),
+            registrar_acoes(missao),!.
 
+missao :- findall(Calcada, (pessoa(_, Calcada, _), Calcada == calcada), Lista),
+          length(Lista, N),
+          N is 6,
+          findall(Vida, (pessoa(_, _, Vida), Vida == 0), Vidas),
+          length(Vidas, M),
+          M >= 1,
+          findall(Vivo, (pessoa(Vivo, _, X), X > 0), Vivos),
+          findall(Mortos, (pessoa(Mortos, _, Y), Y =< 0), Mortos),
+          format('A missao nao foi cumprida, porem foi possivel salvar vidas.~n'),
+          format('Pessoas vivas: ~w~n', [Vivos]),
+          format('Pessoas mortas: ~w~n', [Mortos]).
+
+missao :- format('A missao nao foi cumprida, ainda ha pessoas para serem salvas.~n').
                         
 %logs
 registrar_acoes(Acao):- assert(log(Acao)),
