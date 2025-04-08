@@ -53,7 +53,7 @@
 
 %inicializando o robo
 
-robo(calcada, 100).
+robo(calcada, 350).
 maca([]).
 
 % Definindo os locais do ambiente
@@ -83,17 +83,17 @@ aresta(quarto1, banheiro).
 
 
 % Definindo pessoas
-pessoa(p1,hub,100).
+pessoa(p1,hub,120).
 
-pessoa(p2,hub,100).
+pessoa(p2,hub,120).
 
-pessoa(p3,cozinha,100).
+pessoa(p3,cozinha,120).
 
-pessoa(p4,quarto1,100).
+pessoa(p4,quarto1,120).
 
-pessoa(p5,quarto2,100).
+pessoa(p5,quarto2,120).
 
-pessoa(p6,banheiro,100).
+pessoa(p6,banheiro,120).
 
 pessoas([p1,p2,p3,p4,p5,p6]).
 
@@ -208,7 +208,7 @@ caminhar(Destino):-robo(Local, _),
 oxigenar(P):- maca([P]),
               pessoa(P, maca, O),
               O > 0,
-              O =< 95,
+              O < 110,
               O1 is O + 10,
               robo(Local,Or),
               Or > 0,
@@ -244,7 +244,7 @@ diminuir_oxigenio([P | Cauda]) :-
     Lugar \= calcada,
     vertice(Lugar, incendio),
     O > 0,
-    O1 is O - 15,
+    O1 is O - 10,
     retract(pessoa(P, Lugar, O)),
     assert(pessoa(P, Lugar, O1)),
     format('Pessoa ~w teve sua oxigenacao diminuida de ~w para ~w.~n', [P, O, O1]),
@@ -257,7 +257,7 @@ diminuir_oxigenio([P | Cauda]) :-
     Lugar \= calcada,
     vertice(Lugar, semIncendio),
     O > 0,
-    O1 is O - 10,
+    O1 is O - 5,
     retract(pessoa(P, Lugar, O)),
     assert(pessoa(P, Lugar, O1)),
     format('Pessoa ~w teve sua oxigenacao diminuida de ~w para ~w.~n', [P, O, O1]),
@@ -302,7 +302,32 @@ incendiar_todos([Comodo|_]) :-
     assert(vertice(Comodo, incendio)),
     format('O comodo ~w esta agora pegando fogo!.~n', [Comodo]), !.
     
+missao :- pessoa(p1, calcada, X),
+          pessoa(p2, calcada, Y),
+            pessoa(p3, calcada, Z),
+            pessoa(p4, calcada, W),
+            pessoa(p5, calcada, V),
+            pessoa(p6, calcada, U),
+            X > 0, Y > 0, Z > 0, W > 0, V > 0, U > 0,
+            format('Missao cumprida! o robo salvou todas as pessoa com vida!~n'), !.
 
+missao :- findall(Calcada, (pessoa(_, Calcada, _), Calcada == calcada), Lista),
+          length(Lista, N),
+          N is 6,
+          findall(Vida, (pessoa(_, _, Vida), Vida > 0), Vidas),
+          length(Vidas, M),
+          M >= 1,
+          findall(Vivo, (pessoa(Vivo, _, X), X > 0), Vivos),
+          findall(Mortos, (pessoa(Mortos, _, Y), Y =< 0), Mortos),
+          format('A missao nao foi cumprida, porem foi possivel salvar vidas.~n'),
+          format('Pessoas vivas: ~w~n', [Vivos]),
+          format('Pessoas mortas: ~w~n', [Mortos]).
+
+missao :- findall(Morto, (pessoa(Morto,Local,X), Local == calcada, X =< 0), Mortes),
+            length(Mortes, N), N is 6,
+            format('Missao falhou! Todas as pessoas perderam suas vidas!~n').
+
+missao :- format('A missao nao foi cumprida, ainda ha pessoas para serem salvas.~n').
                         
 %logs
 registrar_acoes(Acao):- assert(log(Acao)),
@@ -451,123 +476,225 @@ mostrar_quarto1_p6() :- quarto1_p6(X), write(X).
 
 
 
-pega_p(p1,calcada) :- retract(calcada_p1('P1')) , assertz(calcada_p1('  ')).
-pega_p(p1,hub) :- retract(hub_p1('Calcada|====|P1  ')), assertz(hub_p1('Calcada|====|    ')).
-pega_p(p1,quarto1) :- retract(quarto1_p1('                |P1 ')), assertz(quarto1_p1('                |   ')).
-pega_p(p1,quarto2) :- retract(quarto2_p1('==|P1 ')), assertz(quarto2_p1('==|   ')).
-pega_p(p1,banheiro) :- retract(banheiro_p1('                |P1 ')), assertz(banheiro_p1('                |   ')).
-pega_p(p1,cozinha) :- retract(cozinha_p1('                |P1 ')), assertz(cozinha_p1('                |   ')).
+pega_p(p1,calcada) :- retract(calcada_p1('P1')) , 
+assertz(calcada_p1('  ')).
+pega_p(p1,hub) :- retract(hub_p1('Calcada|====|P1  ')), 
+assertz(hub_p1('Calcada|====|    ')).
+pega_p(p1,quarto1) :- retract(quarto1_p1('                |P1 ')), 
+assertz(quarto1_p1('                |   ')).
+pega_p(p1,quarto2) :- retract(quarto2_p1('==|P1 ')), 
+assertz(quarto2_p1('==|   ')).
+pega_p(p1,banheiro) :- retract(banheiro_p1('                |P1 ')), 
+assertz(banheiro_p1('                |   ')).
+pega_p(p1,cozinha) :- retract(cozinha_p1('                |P1 ')), 
+assertz(cozinha_p1('                |   ')).
 
-pega_p(p2,calcada) :- retract(calcada_p2('P2')), assertz(calcada_p2('  ')).
-pega_p(p2,hub) :- retract(hub_p2('P2  ')), assertz(hub_p2('    ')).
-pega_p(p2,quarto1) :- retract(quarto1_p2('P2 ')) , assertz(quarto1_p2('   ')).
-pega_p(p2,quarto2) :- retract(quarto2_p2('P2 ')), assertz(quarto2_p2('   ')).
-pega_p(p2,banheiro) :- retract(banheiro_p2('P2 ')), assertz(banheiro_p2('   ')). 
-pega_p(p2,cozinha) :- retract(cozinha_p2('P2 ')), assertz(cozinha_p2('   ')).
+pega_p(p2,calcada) :- retract(calcada_p2('P2')), 
+assertz(calcada_p2('  ')).
+pega_p(p2,hub) :- retract(hub_p2('P2  ')), 
+assertz(hub_p2('    ')).
+pega_p(p2,quarto1) :- retract(quarto1_p2('P2 ')) , 
+assertz(quarto1_p2('   ')).
+pega_p(p2,quarto2) :- retract(quarto2_p2('P2 ')), 
+assertz(quarto2_p2('   ')).
+pega_p(p2,banheiro) :- retract(banheiro_p2('P2 ')), 
+assertz(banheiro_p2('   ')). 
+pega_p(p2,cozinha) :- retract(cozinha_p2('P2 ')), 
+assertz(cozinha_p2('   ')).
 
-pega_p(p3,calcada) :- retract(calcada_p3('P3')), assertz(calcada_p3('  ')).
-pega_p(p3,hub) :- retract(hub_p3('P3  ')), assertz(hub_p3('    ')).
-pega_p(p3,quarto1) :- retract(quarto1_p3('P3 ')), assertz(quarto1_p3('   ')).
-pega_p(p3,quarto2) :- retract(quarto2_p3('P3 ')), assertz(quarto2_p3('   ')).
-pega_p(p3,banheiro) :- retract(banheiro_p3('P3 ')), assert(banheiro_p3('   ')).
-pega_p(p3,cozinha) :- retract(cozinha_p3('P3 ')), assertz(cozinha_p3('   ')).
+pega_p(p3,calcada) :- retract(calcada_p3('P3')), 
+assertz(calcada_p3('  ')).
+pega_p(p3,hub) :- retract(hub_p3('P3  ')), 
+assertz(hub_p3('    ')).
+pega_p(p3,quarto1) :- retract(quarto1_p3('P3 ')), 
+assertz(quarto1_p3('   ')).
+pega_p(p3,quarto2) :- retract(quarto2_p3('P3 ')), 
+assertz(quarto2_p3('   ')).
+pega_p(p3,banheiro) :- retract(banheiro_p3('P3 ')), 
+assert(banheiro_p3('   ')).
+pega_p(p3,cozinha) :- retract(cozinha_p3('P3 ')), 
+assertz(cozinha_p3('   ')).
 
-pega_p(p4,calcada) :- retract(calcada_p4('P4')), assertz(calcada_p4('  ')).
-pega_p(p4,hub) :- retract(hub_p4('P4  ')), assertz(hub_p4('    ')).
-pega_p(p4,quarto1) :- retract(quarto1_p4('P4 ')), assertz(quarto1_p4('   ')).
-pega_p(p4,quarto2) :- retract(quarto2_p4('P4 ')), assertz(quarto2_p4('   ')).
-pega_p(p4,banheiro) :- retract(banheiro_p4('P4 ')), assertz(banheiro_p4('   ')).
-pega_p(p4,cozinha) :- retract(cozinha_p4('P4 ')), assertz(cozinha_p4('   ')).
+pega_p(p4,calcada) :- retract(calcada_p4('P4')), 
+assertz(calcada_p4('  ')).
+pega_p(p4,hub) :- retract(hub_p4('P4  ')), 
+assertz(hub_p4('    ')).
+pega_p(p4,quarto1) :- retract(quarto1_p4('P4 ')), 
+assertz(quarto1_p4('   ')).
+pega_p(p4,quarto2) :- retract(quarto2_p4('P4 ')), 
+assertz(quarto2_p4('   ')).
+pega_p(p4,banheiro) :- retract(banheiro_p4('P4 ')), 
+assertz(banheiro_p4('   ')).
+pega_p(p4,cozinha) :- retract(cozinha_p4('P4 ')), 
+assertz(cozinha_p4('   ')).
 
-pega_p(p5,calcada) :- retract(calcada_p5('P5')), assertz(calcada_p5('  ')).
-pega_p(p5,hub) :- retract(hub_p5('P5  ')), assertz(hub_p5('    ')).
-pega_p(p5,quarto1) :- retract(quarto1_p5('P5 ')), assertz(quarto1_p5('   ')).
-pega_p(p5,quarto2) :- retract(quarto2_p5('P5 ')), assertz(quarto2_p5('   ')).
-pega_p(p5,banheiro) :- retract(banheiro_p5('P5 ')), assertz(banheiro_p5('   ')).
-pega_p(p5,cozinha) :- retract(cozinha_p5('P5 ')), assertz(cozinha_p5('   ')).
+pega_p(p5,calcada) :- retract(calcada_p5('P5')), 
+assertz(calcada_p5('  ')).
+pega_p(p5,hub) :- retract(hub_p5('P5  ')), 
+assertz(hub_p5('    ')).
+pega_p(p5,quarto1) :- retract(quarto1_p5('P5 ')), 
+assertz(quarto1_p5('   ')).
+pega_p(p5,quarto2) :- retract(quarto2_p5('P5 ')), 
+assertz(quarto2_p5('   ')).
+pega_p(p5,banheiro) :- retract(banheiro_p5('P5 ')), 
+assertz(banheiro_p5('   ')).
+pega_p(p5,cozinha) :- retract(cozinha_p5('P5 ')), 
+assertz(cozinha_p5('   ')).
 
-pega_p(p6,calcada) :- retract(calcada_p6('P6')), assertz(calcada_p6('  ')).
-pega_p(p6,hub) :- retract(hub_p6('P6|==')) , assertz(hub_p6('  |==')).
-pega_p(p6,quarto1) :- retract(quarto1_p6('P6|     ')), assertz(quarto1_p6('  |     ')).
-pega_p(p6,quarto2) :- retract(quarto2_p6('P6|')), assertz(quarto2_p6('  |')).
-pega_p(p6,banheiro) :- retract(banheiro_p6('P6|     ')), assertz(banheiro_p6('  |     ')).
-pega_p(p6,cozinha) :- retract(cozinha_p6('P6|    ')), assertz(cozinha_p6('  |    ')).
-
-
-solta_p(p1,calcada) :- assertz(calcada_p1('P1')) , retract(calcada_p1('  ')).
-solta_p(p1,hub) :- assertz(hub_p1('Calcada|====|P1  ')), retract(hub_p1('Calcada|====|    ')).
-solta_p(p1,quarto1) :- assertz(quarto1_p1('                |P1 ')), retract(quarto1_p1('                |   ')).
-solta_p(p1,quarto2) :- assertz(quarto2_p1('==|P1 ')), retract(quarto2_p1('==|   ')).
-solta_p(p1,banheiro) :- assertz(banheiro_p1('                |P1 ')), retract(banheiro_p1('                |   ')).
-solta_p(p1,cozinha) :- assertz(cozinha_p1('                |P1 ')), retract(cozinha_p1('                |   ')).
-
-
-solta_p(p2,calcada) :- assertz(calcada_p2('P2')), retract(calcada_p2('  ')).
-solta_p(p2,hub) :- assertz(hub_p2('P2  ')), retract(hub_p2('    ')).
-solta_p(p2,quarto1) :- assertz(quarto1_p2('P2 ')) , retract(quarto1_p2('   ')).
-solta_p(p2,quarto2) :- assertz(quarto2_p2('P2 ')), retract(quarto2_p2('   ')).
-solta_p(p2,banheiro) :- assertz(banheiro_p2('P2 ')), retract(banheiro_p2('   ')).
-solta_p(p2,cozinha) :- assertz(cozinha_p2('P2 ')), retract(cozinha_p2('   ')).
-
-solta_p(p3,calcada) :- assertz(calcada_p3('P3')), retract(calcada_p3('  ')).
-solta_p(p3,hub) :- assertz(hub_p3('P3  ')), retract(hub_p3('    ')).
-solta_p(p3,quarto1) :- assertz(quarto1_p3('P3 ')), retract(quarto1_p3('   ')).
-solta_p(p3,quarto2) :- assertz(quarto2_p3('P3 ')), retract(quarto2_p3('   ')).
-solta_p(p3,banheiro) :- assertz(banheiro_p3('P3 ')), retract(banheiro_p3('   ')).
-solta_p(p3,cozinha) :- assertz(cozinha_p3('P3 ')), retract(cozinha_p3('   ')).
-
-solta_p(p4,calcada) :- assertz(calcada_p4('P4')), retract(calcada_p4('  ')).
-solta_p(p4,hub) :- assertz(hub_p4('P4  ')), retract(hub_p4('    ')).
-solta_p(p4,quarto1) :- assertz(quarto1_p4('P4 ')), retract(quarto1_p4('   ')).
-solta_p(p4,quarto2) :- assertz(quarto2_p4('P4 ')), retract(quarto2_p4('   ')).
-solta_p(p4,banheiro) :- assertz(banheiro_p4('P4 ')), retract(banheiro_p4('   ')).
-solta_p(p4,cozinha) :- assertz(cozinha_p4('P4 ')), retract(cozinha_p4('   ')).
-
-solta_p(p5,calcada) :- assertz(calcada_p5('P5')), retract(calcada_p5('  ')).
-solta_p(p5,hub) :- assertz(hub_p5('P5  ')), retract(hub_p5('    ')).
-solta_p(p5,quarto1) :- assertz(quarto1_p5('P5 ')), retract(quarto1_p5('   ')).
-solta_p(p5,quarto2) :- assertz(quarto2_p5('P5 ')), retract(quarto2_p5('   ')).
-solta_p(p5,banheiro) :- assertz(banheiro_p5('P5 ')), retract(banheiro_p5('   ')).
-solta_p(p5,cozinha) :- assertz(cozinha_p5('P5 ')), retract(cozinha_p5('   ')).
-
-solta_p(p6,calcada) :- assertz(calcada_p6('P6')), retract(calcada_p6('  ')).
-solta_p(p6,hub) :- assertz(hub_p6('P6|==')) , retract(hub_p6('  |==')).
-solta_p(p6,quarto1) :- assertz(quarto1_p6('P6|     ')), retract(quarto1_p6('  |     ')).
-solta_p(p6,quarto2) :- assertz(quarto2_p6('P6|')), retract(quarto2_p6('  |')).
-solta_p(p6,banheiro) :- assertz(banheiro_p6('P6|     ')), retract(banheiro_p6('  |     ')).
-solta_p(p6,cozinha) :- assertz(cozinha_p6('P6|    ')), retract(cozinha_p6('  |    ')).
+pega_p(p6,calcada) :- retract(calcada_p6('P6')), 
+assertz(calcada_p6('  ')).
+pega_p(p6,hub) :- retract(hub_p6('P6|==')) , 
+assertz(hub_p6('  |==')).
+pega_p(p6,quarto1) :- retract(quarto1_p6('P6|     ')), 
+assertz(quarto1_p6('  |     ')).
+pega_p(p6,quarto2) :- retract(quarto2_p6('P6|')), 
+assertz(quarto2_p6('  |')).
+pega_p(p6,banheiro) :- retract(banheiro_p6('P6|     ')), 
+assertz(banheiro_p6('  |     ')).
+pega_p(p6,cozinha) :- retract(cozinha_p6('P6|    ')), 
+assertz(cozinha_p6('  |    ')).
 
 
+solta_p(p1,calcada) :- assertz(calcada_p1('P1')) , 
+retract(calcada_p1('  ')).
+solta_p(p1,hub) :- assertz(hub_p1('Calcada|====|P1  ')), 
+retract(hub_p1('Calcada|====|    ')).
+solta_p(p1,quarto1) :- assertz(quarto1_p1('                |P1 ')), 
+retract(quarto1_p1('                |   ')).
+solta_p(p1,quarto2) :- assertz(quarto2_p1('==|P1 ')), 
+retract(quarto2_p1('==|   ')).
+solta_p(p1,banheiro) :- assertz(banheiro_p1('                |P1 ')), 
+retract(banheiro_p1('                |   ')).
+solta_p(p1,cozinha) :- assertz(cozinha_p1('                |P1 ')), 
+retract(cozinha_p1('                |   ')).
+
+
+solta_p(p2,calcada) :- assertz(calcada_p2('P2')), 
+retract(calcada_p2('  ')).
+solta_p(p2,hub) :- assertz(hub_p2('P2  ')), 
+retract(hub_p2('    ')).
+solta_p(p2,quarto1) :- assertz(quarto1_p2('P2 ')) , 
+retract(quarto1_p2('   ')).
+solta_p(p2,quarto2) :- assertz(quarto2_p2('P2 ')), 
+retract(quarto2_p2('   ')).
+solta_p(p2,banheiro) :- assertz(banheiro_p2('P2 ')), 
+retract(banheiro_p2('   ')).
+solta_p(p2,cozinha) :- assertz(cozinha_p2('P2 ')), 
+retract(cozinha_p2('   ')).
+
+solta_p(p3,calcada) :- assertz(calcada_p3('P3')), 
+retract(calcada_p3('  ')).
+solta_p(p3,hub) :- assertz(hub_p3('P3  ')), 
+retract(hub_p3('    ')).
+solta_p(p3,quarto1) :- assertz(quarto1_p3('P3 ')), 
+retract(quarto1_p3('   ')).
+solta_p(p3,quarto2) :- assertz(quarto2_p3('P3 ')), 
+retract(quarto2_p3('   ')).
+solta_p(p3,banheiro) :- assertz(banheiro_p3('P3 ')), 
+retract(banheiro_p3('   ')).
+solta_p(p3,cozinha) :- assertz(cozinha_p3('P3 ')), 
+retract(cozinha_p3('   ')).
+
+solta_p(p4,calcada) :- assertz(calcada_p4('P4')), 
+retract(calcada_p4('  ')).
+solta_p(p4,hub) :- assertz(hub_p4('P4  ')), 
+retract(hub_p4('    ')).
+solta_p(p4,quarto1) :- assertz(quarto1_p4('P4 ')), 
+retract(quarto1_p4('   ')).
+solta_p(p4,quarto2) :- assertz(quarto2_p4('P4 ')), 
+retract(quarto2_p4('   ')).
+solta_p(p4,banheiro) :- assertz(banheiro_p4('P4 ')), 
+retract(banheiro_p4('   ')).
+solta_p(p4,cozinha) :- assertz(cozinha_p4('P4 ')), 
+retract(cozinha_p4('   ')).
+
+solta_p(p5,calcada) :- assertz(calcada_p5('P5')), 
+retract(calcada_p5('  ')).
+solta_p(p5,hub) :- assertz(hub_p5('P5  ')), 
+retract(hub_p5('    ')).
+solta_p(p5,quarto1) :- assertz(quarto1_p5('P5 ')), 
+retract(quarto1_p5('   ')).
+solta_p(p5,quarto2) :- assertz(quarto2_p5('P5 ')), 
+retract(quarto2_p5('   ')).
+solta_p(p5,banheiro) :- assertz(banheiro_p5('P5 ')), 
+retract(banheiro_p5('   ')).
+solta_p(p5,cozinha) :- assertz(cozinha_p5('P5 ')), 
+retract(cozinha_p5('   ')).
+
+solta_p(p6,calcada) :- assertz(calcada_p6('P6')), 
+retract(calcada_p6('  ')).
+solta_p(p6,hub) :- assertz(hub_p6('P6|==')) , 
+retract(hub_p6('  |==')).
+solta_p(p6,quarto1) :- assertz(quarto1_p6('P6|     ')), 
+retract(quarto1_p6('  |     ')).
+solta_p(p6,quarto2) :- assertz(quarto2_p6('P6|')), 
+retract(quarto2_p6('  |')).
+solta_p(p6,banheiro) :- assertz(banheiro_p6('P6|     ')), 
+retract(banheiro_p6('  |     ')).
+solta_p(p6,cozinha) :- assertz(cozinha_p6('P6|    ')), 
+retract(cozinha_p6('  |    ')).
 
 
 
 
-move_mapa(banheiro, quarto1) :-  retract(banheiro_robo('                |      robo       |     ')), assertz(banheiro_robo('                |                 |     ')),
-                                           retract(quarto1_robo('                |                 |     ')), assertz(quarto1_robo('                |      robo       |     ')),!.
 
-move_mapa(quarto1, banheiro) :-  retract(quarto1_robo('                |      robo       |     ')), assertz(quarto1_robo('                |                 |     ')),
-                                           retract(banheiro_robo('                |                 |     ')), assertz(banheiro_robo('                |      robo       |     ')),!.
 
-move_mapa(hub, quarto1) :-  retract(hub_robo('       |    |          robo        |  ')), assertz(hub_robo('       |    |                      |  ')),
-                                           retract(quarto1_robo('                |                 |     ')), assertz(quarto1_robo('                |      robo       |     ')),!.
+move_mapa(banheiro, quarto1) :-  
+retract(banheiro_robo('                |      robo       |     ')),
+assertz(banheiro_robo('                |                 |     ')),                                        
+retract(quarto1_robo('                |                 |     ')), 
+assertz(quarto1_robo('                |      robo       |     ')),!.
 
-move_mapa(quarto1, hub) :-  assertz(hub_robo('       |    |          robo        |  ')), retract(hub_robo('       |    |                      |  ')),
-                                           assertz(quarto1_robo('                |                 |     ')), retract(quarto1_robo('                |      robo       |     ')),!.
+move_mapa(quarto1, banheiro) :-  
+retract(quarto1_robo('                |      robo       |     ')), 
+assertz(quarto1_robo('                |                 |     ')),
+retract(banheiro_robo('                |                 |     ')), 
+assertz(banheiro_robo('                |      robo       |     ')),!.
 
-move_mapa(hub, quarto2) :-  retract(hub_robo('       |    |          robo        |  ')), assertz(hub_robo('       |    |                      |  ')),
-                                           retract(quarto2_robo('  |                 |')), assertz(quarto2_robo('  |      robo       |')),!.
+move_mapa(hub, quarto1) :-  
+retract(hub_robo('       |    |          robo        |  ')), 
+assertz(hub_robo('       |    |                      |  ')),
+retract(quarto1_robo('                |                 |     ')), 
+assertz(quarto1_robo('                |      robo       |     ')),!.
 
-move_mapa(quarto2, hub) :-  assertz(hub_robo('       |    |          robo        |  ')), retract(hub_robo('       |    |                      |  ')),
-                                           assertz(quarto2_robo('  |                 |')), retract(quarto2_robo('  |      robo       |')),!.
+move_mapa(quarto1, hub) :-  
+assertz(hub_robo('       |    |          robo        |  ')), 
+retract(hub_robo('       |    |                      |  ')),
+assertz(quarto1_robo('                |                 |     ')), 
+retract(quarto1_robo('                |      robo       |     ')),!.
 
-move_mapa(calcada, hub) :-  retract(calcada_robo(' robo  |    |                      |  ')), assertz(calcada_robo('       |    |                      |  ')),
-                                           assertz(hub_robo('       |    |          robo        |  ')), retract(hub_robo('       |    |                      |  ')),!.
+move_mapa(hub, quarto2) :-  
+retract(hub_robo('       |    |          robo        |  ')), 
+assertz(hub_robo('       |    |                      |  ')),
+retract(quarto2_robo('  |                 |')), 
+assertz(quarto2_robo('  |      robo       |')),!.
 
-move_mapa(hub, calcada) :-  assertz(calcada_robo(' robo  |    |                      |  ')), retract(calcada_robo('       |    |                      |  ')),
-                                           retract(hub_robo('       |    |          robo        |  ')), assertz(hub_robo('       |    |                      |  ')),!.
+move_mapa(quarto2, hub) :-  
+assertz(hub_robo('       |    |          robo        |  ')), 
+retract(hub_robo('       |    |                      |  ')),
+assertz(quarto2_robo('  |                 |')), 
+retract(quarto2_robo('  |      robo       |')),!.
 
-move_mapa(cozinha, hub) :-  assertz(cozinha_robo('                |                 |    ')), retract(cozinha_robo('                |      robo       |    ')),
-                                           assertz(hub_robo('       |    |          robo        |  ')), retract(hub_robo('       |    |                      |  ')),!.
+move_mapa(calcada, hub) :-  
+retract(calcada_robo(' robo  |    |                      |  ')), 
+assertz(calcada_robo('       |    |                      |  ')),
+assertz(hub_robo('       |    |          robo        |  ')), 
+retract(hub_robo('       |    |                      |  ')),!.
 
-move_mapa(hub, cozinha) :-  retract(cozinha_robo('                |                 |    ')), assertz(cozinha_robo('                |      robo       |    ')),
-                                           retract(hub_robo('       |    |          robo        |  ')), assertz(hub_robo('       |    |                      |  ')),!.
+move_mapa(hub, calcada) :-  
+assertz(calcada_robo(' robo  |    |                      |  ')), 
+retract(calcada_robo('       |    |                      |  ')),
+retract(hub_robo('       |    |          robo        |  ')), 
+assertz(hub_robo('       |    |                      |  ')),!.
+
+move_mapa(cozinha, hub) :-  
+assertz(cozinha_robo('                |                 |    ')), 
+retract(cozinha_robo('                |      robo       |    ')),
+assertz(hub_robo('       |    |          robo        |  ')), 
+retract(hub_robo('       |    |                      |  ')),!.
+
+move_mapa(hub, cozinha) :-  
+retract(cozinha_robo('                |                 |    ')), 
+assertz(cozinha_robo('                |      robo       |    ')),
+retract(hub_robo('       |    |          robo        |  ')), 
+assertz(hub_robo('       |    |                      |  ')),!.
